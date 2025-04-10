@@ -1,0 +1,57 @@
+version: "3.8"
+services:
+  app:
+    container_name: nodejs-app
+    build: .
+    ports:
+      - "5050:5050"
+      - "4040:4040" # Socket.io
+    environment:
+      - MQTT_HOST=192.168.108.204
+      - MQTT_PORT=18883
+      - MQTT_USERNAME=hass
+      - MQTT_PASSWORD=hass
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_NAME=MQTT
+    depends_on:
+      - db
+    volumes:
+      - ./uploads:/usr/src/app/uploads
+
+  db:
+    image: mysql:latest
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: MQTT
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql_data_test:/var/lib/mysql
+      - ./my.cnf:/etc/mysql/my.cnf
+    healthcheck:
+      test: [ "CMD-SHELL", "mysqladmin ping -h localhost || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - "8081:80"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data_test:
+    driver: local

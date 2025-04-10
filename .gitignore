@@ -1,0 +1,6 @@
+# Ignore MySQL data and socket files
+mysql_data_test/
+*.sock
+
+# Ignore Firebase credentials (ถ้าไม่อยากให้ push json config)
+*.json
